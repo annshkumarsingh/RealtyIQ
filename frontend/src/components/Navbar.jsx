@@ -10,14 +10,14 @@ export default function Navbar() {
 
         <div className="flex items-center gap-5">
           <a
-            href="#"
+            href="https://github.com/annshkumarsingh/RealtyIQ/blob/main/frontend/README.md"
             className="text-sm no-underline! hover:underline! text-gray-600 hover:text-gray-900"
           >
             Docs
           </a>
 
           <a
-            href="#"
+            href="https://github.com/annshkumarsingh/RealtyIQ"
             className="px-4 py-1.5 no-underline! bg-blue-600 text-white rounded-lg text-sm font-medium shadow hover:bg-blue-700 transition"
           >
             GitHub

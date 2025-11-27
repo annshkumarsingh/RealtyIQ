@@ -10,6 +10,7 @@ import openai
 # ---------- CONFIG ----------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXCEL_PATH = os.path.join(BASE_DIR, "uploads/uploaded_excel.xlsx")
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 
 
@@ -18,16 +19,15 @@ EXCEL_PATH = os.path.join(BASE_DIR, "uploads/uploaded_excel.xlsx")
 
 def generate_llm_summary(area, metric, df):
     try:
-        text = f"Write a short simple summary for real estate analysis.\nArea: {area}\nMetric: {metric}\nData:\n{df.to_string()}\n\nGive insights in 3-4 bullet points."
+        text = f"Write a short simple summary for real estate analysis.\nArea: {area}\nMetric: {metric}\nData:\n{df.to_string()}\n\nGive insights in 3-4 bullet points. Like 'Wakad saw steady price growth...\n- Demand increased 12% YoY...\n- Weighted rates peaked in 2023...'"
         
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": text}]
         )
-        
         return response.choices[0].message["content"]
     except:
-        return "Summary generated based on available data."
+        return ""
 
 def is_count_metric(col_name: str) -> bool:
     return any(keyword in col_name.lower() for keyword in ["total", "inventory", "supply", "sales", "stock", "unit"])
@@ -181,7 +181,7 @@ def detect_column(df: pd.DataFrame, query: str) -> str:
     return df.columns[0]
 
 
-def safe_trend(df, metric_col):
+def generate_trend(df, metric_col):
     if df.empty or "year" not in df.columns or metric_col not in df.columns:
         return []
     try:
@@ -189,21 +189,6 @@ def safe_trend(df, metric_col):
         return trend[["year", metric_col]].to_dict(orient="records")
     except Exception:
         return []
-
-
-def generate_trends(df: pd.DataFrame, metric_col: str) -> dict:
-    numeric_cols = list(df.select_dtypes(include="number").columns)
-    secondary_col = numeric_cols[1] if len(numeric_cols) > 1 else None
-
-    if secondary_col:
-        trend = df.groupby("year", as_index=False).agg({metric_col: "mean", secondary_col: "sum"})
-        return {
-            metric_col: trend[["year", metric_col]].to_dict(orient="records"),
-            secondary_col: trend[["year", secondary_col]].to_dict(orient="records")
-        }
-    else:
-        trend = df.groupby("year", as_index=False)[metric_col].mean()
-        return {"metricTrend": trend[["year", metric_col]].to_dict(orient="records")}
 
 
 
@@ -260,15 +245,29 @@ def analyze(request):
     if not mentioned_areas:
         return Response({"error": "No matching area found"}, status=404)
 
-    # Casee 1: One Area
+    # Case 1: One Area
     if len(mentioned_areas) == 1:
         area = mentioned_areas[0]
         filtered = n_years_filter(df[df[area_col].str.lower() == area.lower()], query)
         metric_col = detect_column(filtered, query)
-        chart = generate_trends(filtered, metric_col)
-        summary = f"{area}: Trend analysis based on '{metric_col}' extracted successfully."
+
+        chart = {
+            area: generate_trend(filtered, metric_col)
+        }
+        llm_summary = generate_llm_summary(area, metric_col, filtered)
+
+        if llm_summary.strip() == "":
+            summary = (
+                f"Trend analysis for {area}, focusing on {metric_col}. "
+                f"The chart shows how this metric changed across the selected years. "
+                "The table provides all filtered raw values used for this analysis."
+            )
+        else:
+            summary = llm_summary
+
         return Response({
             "summary": summary,
+            "metric": metric_col,
             "area": area,
             "chart": chart,
             "table": filtered.to_dict(orient="records")
@@ -282,9 +281,19 @@ def analyze(request):
             numeric_cols = list(df1.select_dtypes(include="number").columns)
             metric_col = numeric_cols[0] if numeric_cols else None
 
-        trend1 = safe_trend(df1, metric_col)
-        trend2 = safe_trend(df2, metric_col)
-        summary = f"Comparison of {metric_col} between {mentioned_areas[0]} and {mentioned_areas[1]}."
+        trend1 = generate_trend(df1, metric_col)
+        trend2 = generate_trend(df2, metric_col)
+        comparison_df = pd.concat([df1, df2])
+        llm_summary = generate_llm_summary(" & ".join(mentioned_areas), metric_col, comparison_df)
+        if llm_summary.strip() == "":
+            summary = (
+                f"Comparison of {mentioned_areas[0]} and {mentioned_areas[1]} "
+                f"based on metric '{metric_col}'. "
+                "The trends show how both areas performed across the selected years."
+            )
+        else:
+            summary = llm_summary
+
         return Response({
             "summary": summary,
             "metric": metric_col,
@@ -303,10 +312,20 @@ def analyze(request):
         comparison = {}
         for area in mentioned_areas:
             temp = n_years_filter(df[df[area_col].str.lower() == area.lower()], query)
-            comparison[area] = safe_trend(temp, metric_col)
+            comparison[area] = generate_trend(temp, metric_col)
 
         chart_data = [{"area": area, "data": comparison[area]} for area in mentioned_areas]
-        summary = f"Comparison of '{metric_col}' across {len(mentioned_areas)} areas: {', '.join(mentioned_areas)}"
+        all_df = n_years_filter(df[df[area_col].str.lower().isin([a.lower() for a in mentioned_areas])], query)
+        llm_summary = generate_llm_summary(", ".join(mentioned_areas), metric_col, all_df)
+        if llm_summary.strip() == "":
+            summary = (
+                f"Comparison across {len(mentioned_areas)} areas**: "
+                f"{', '.join(mentioned_areas)}, using metric '{metric_col}'. "
+                "The chart highlights how each locality's values changed over the selected years."
+            )
+        else:
+            summary = llm_summary
+
         filtered_rows = n_years_filter(
             df[df[area_col].str.lower().isin([a.lower() for a in mentioned_areas])],
             query

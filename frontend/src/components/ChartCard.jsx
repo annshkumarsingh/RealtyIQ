@@ -39,7 +39,7 @@ export default function ChartCard({ chartData }) {
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Trends</h2>
 
       <div className="w-full h-64">
-        <ResponsiveContainer>
+        <ResponsiveContainer width="100%" height="100%">
           <LineChart data={formatted}>
             <XAxis dataKey="year" />
             <YAxis />

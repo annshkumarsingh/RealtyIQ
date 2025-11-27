@@ -11,7 +11,7 @@ export default function ChatContainer({ messages }) {
           <MessageArea sender={msg.sender} message={msg.message} />
 
           {msg.summary && <SummaryCard summary={msg.summary} />}
-          {msg.chartData && <ChartCard chartData={msg.chartData} />}
+          {msg.chartData && Object.keys(msg.chartData).length > 0 && (<ChartCard chartData={msg.chartData} />)}
           {msg.tableData && <TableCard tableData={msg.tableData} />}
         </div>
       ))}

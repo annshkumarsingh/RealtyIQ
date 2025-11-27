@@ -25,6 +25,10 @@ export default function InputBar({ query, setQuery, sendMessage }) {
     setUploading(false);
   };
 
+  const removeFile = () => {
+    setFileName("");
+  };
+
   return (
     <div className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 shadow-sm">
       <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
@@ -32,7 +36,7 @@ export default function InputBar({ query, setQuery, sendMessage }) {
         {/* Upload Excel */}
         <label
           className={`flex items-center gap-2 px-4 py-3 rounded-xl border cursor-pointer text-sm
-            ${uploading ? "bg-gray-200 text-gray-500" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}
+            ${uploading ? "bg-gray-200 text-gray-500 cursor-not-allowed" : "bg-gray-100 hover:bg-gray-200 text-gray-700 cursor-pointer"}`}
         >
           <input
             type="file"
@@ -43,10 +47,19 @@ export default function InputBar({ query, setQuery, sendMessage }) {
           📁 {uploading ? "Uploading…" : "Upload Excel"}
         </label>
 
+        {/* File Name + Remove Button */}
         {fileName && (
-          <span className="text-xs text-gray-500 truncate max-w-[120px]">
-            {fileName}
-          </span>
+          <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-lg">
+            <span className="text-xs text-gray-600 truncate max-w-[110px]">
+              {fileName}
+            </span>
+            <button
+              onClick={removeFile}
+              className="text-gray-500 hover:text-red-500 text-sm font-bold px-1"
+            >
+              ✕
+            </button>
+          </div>
         )}
 
         {/* Query Input */}

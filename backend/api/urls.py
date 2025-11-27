@@ -3,6 +3,6 @@ from .views import upload_excel
 from .views import analyze
 
 urlpatterns = [
-    path("upload-excel/", upload_excel),
+    path("upload_excel/", upload_excel),
     path("analyze/", analyze),
 ]
