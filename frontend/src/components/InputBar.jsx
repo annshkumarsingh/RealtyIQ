@@ -4,6 +4,8 @@ export default function InputBar({ query, setQuery, sendMessage }) {
   const [uploading, setUploading] = useState(false);
   const [fileName, setFileName] = useState("");
 
+  const backend_url = import.meta.env.VITE_API_URL;
+
   const handleUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -14,7 +16,7 @@ export default function InputBar({ query, setQuery, sendMessage }) {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch("http://localhost:8000/api/upload_excel/", {
+    const res = await fetch(`${backend_url}/api/upload_excel/`, {
       method: "POST",
       body: formData,
     });

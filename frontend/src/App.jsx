@@ -7,6 +7,8 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState("");
 
+  const backend_url = import.meta.env.VITE_BACKEND_URL;
+
   const sendMessage = async () => {
     if (!query.trim()) return;
 
@@ -14,7 +16,7 @@ export default function App() {
     setMessages((prev) => [...prev, { sender: "user", message: query }]);
 
     // Send request to backend
-    const res = await fetch("http://localhost:8000/api/analyze/", {
+    const res = await fetch(`${backend_url}/api/analyze/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query }),
