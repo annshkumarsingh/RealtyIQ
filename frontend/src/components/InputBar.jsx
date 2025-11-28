@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { toast, Bounce } from "react-toastify";
 
 export default function InputBar({ query, setQuery, sendMessage }) {
   const [uploading, setUploading] = useState(false);
   const [fileName, setFileName] = useState("");
 
-  const backend_url = import.meta.env.VITE_API_URL;
+  const backend_url = import.meta.env.VITE_BACKEND_URL;
 
   const handleUpload = async (e) => {
     const file = e.target.files[0];
@@ -21,8 +22,18 @@ export default function InputBar({ query, setQuery, sendMessage }) {
       body: formData,
     });
 
+    toast.success('File Uploaded Successfully!', {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      transition: Bounce,
+    });
     const data = await res.json();
-    console.log("Upload response:", data);
 
     setUploading(false);
   };

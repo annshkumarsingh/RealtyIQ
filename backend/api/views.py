@@ -4,13 +4,12 @@ import pandas as pd
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
-import openai
+from google import genai
 
 
 # ---------- CONFIG ----------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXCEL_PATH = os.path.join(BASE_DIR, "uploads/uploaded_excel.xlsx")
-openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 
 
@@ -19,14 +18,34 @@ openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 def generate_llm_summary(area, metric, df):
     try:
-        text = f"Write a short simple summary for real estate analysis.\nArea: {area}\nMetric: {metric}\nData:\n{df.to_string()}\n\nGive insights in 3-4 bullet points. Like 'Wakad saw steady price growth...\n- Demand increased 12% YoY...\n- Weighted rates peaked in 2023...'"
-        
-        response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": text}]
+        client = genai.Client()
+
+        prompt = f"""
+You are a real estate data analyst. Write a short summary in simple language.
+
+Area: {area}
+Metric: {metric}
+
+Data table:
+{df.to_string()}
+
+Give insights in 3–4 bullet points. Avoid technical jargon. Examples:
+- "{area} saw steady price growth in recent years."
+- "Demand increased around 2022 before cooling slightly."
+- "The metric peaked in some years and dipped in others."
+
+Write only the bullet points, nothing else.
+        """
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
         )
-        return response.choices[0].message["content"]
-    except:
+
+        return response.text.strip()
+
+    except Exception as e:
+        print("LLM error:", e)
         return ""
 
 def is_count_metric(col_name: str) -> bool:

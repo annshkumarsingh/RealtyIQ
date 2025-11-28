@@ -1,16 +1,248 @@
-# React + Vite
+🚀 RealtyIQ – AI-Powered Real Estate Analysis Chatbot
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+RealtyIQ is a full-stack AI chatbot that analyzes Excel-based real estate datasets and returns:
 
-Currently, two official plugins are available:
+📊 Dynamic charts
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+📝 AI-generated summaries using Gemini
 
-## React Compiler
+📋 Filtered tables
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+🧠 Smart column detection
 
-## Expanding the ESLint configuration
+🔍 Natural-language query support
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+🏙️ Multi-area comparison
+
+Built using React + Tailwind (frontend) and Django REST Framework + Pandas + Gemini API (backend).
+
+⭐ Features
+🔹 1. Upload Excel Data
+
+Supports .xls and .xlsx
+
+File stored server-side
+
+Validated and parsed using Pandas
+
+🔹 2. Natural Language Querying
+
+Ask questions like:
+
+“Show me weighted rate trends for Wakad in the last 3 years”
+
+“Compare Hinjewadi and Baner for sold units”
+
+“Give insights for all areas for carpet area supply”
+
+🔹 3. AI-Generated Summaries (Gemini 2.5 Flash)
+
+Backend uses:
+
+client = genai.Client()
+
+
+Generates:
+
+3–4 bullet insights
+
+Simple, easy-to-read language
+
+Uses real data from uploaded Excel
+
+🔹 4. Trend Charts
+
+Frontend auto-renders:
+
+Single-area line charts
+
+Multi-area comparisons
+
+Year-wise metric trends
+
+🔹 5. Typing Indicator + Toast Notifications
+
+Smooth UX with:
+
+“Analyzing data…” bot typing animation
+
+Toastify alerts for Excel upload success
+
+🔹 6. Smart Column Detection
+
+Finds correct metric column based on:
+
+Keywords
+
+Area type (flat/shop/office)
+
+Numeric fallback rules
+
+🛠️ Tech Stack
+Frontend
+
+React (Vite)
+
+TailwindCSS
+
+React-Toastify
+
+Custom chart + table components
+
+Backend
+
+Django REST Framework
+
+Pandas
+
+Google Gemini API (google-genai)
+
+Regex-based query interpretation
+
+📁 Project Structure
+RealtyIQ/
+│
+├── backend/
+│   ├── api/
+│   │   ├── views.py        # Core logic (AI, filtering, parsing)
+│   │   ├── urls.py
+│   ├── realty_backend/
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   ├── manage.py
+│   ├── .env                # GEMINI_API_KEY here
+│
+└── frontend/
+    ├── src/
+    │   ├── components/
+    │   │   ├── MessageArea.jsx
+    │   │   ├── SummaryCard.jsx
+    │   │   ├── ChartCard.jsx
+    │   │   ├── TableCard.jsx
+    │   │   ├── InputBar.jsx
+    │   │   ├── ChatContainer.jsx
+    │   ├── App.jsx
+    │   ├── main.jsx
+    ├── .env (VITE_BACKEND_URL)
+
+⚙️ Installation & Setup
+1. Clone Repository
+git clone https://github.com/annshkumarsingh/RealtyIQ
+cd RealtyIQ
+
+2. Backend Setup (Django)
+Create & activate virtual environment
+cd backend
+python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+
+Install requirements
+pip install -r requirements.txt
+
+Create .env
+GEMINI_API_KEY=your_api_key_here
+
+Run backend
+python manage.py runserver
+
+3. Frontend Setup (React)
+cd frontend
+npm install
+
+Create .env file
+VITE_BACKEND_URL=http://localhost:8000
+
+Run frontend
+npm run dev
+
+🔌 API Endpoints
+POST /api/upload_excel/
+
+Uploads Excel file.
+
+Request
+
+multipart/form-data
+
+file: <excel_file>
+
+Response
+{
+  "message": "File uploaded and saved successfully",
+  "rows": 124,
+  "columns": ["area", "year", "flat - weighted average rate", ...]
+}
+
+POST /api/analyze/
+
+Processes natural language query.
+
+Request
+{
+  "query": "Compare Wakad and Baner for weighted rate last 3 years"
+}
+
+Response (example)
+{
+  "summary": "- Wakad saw price growth...\n- Baner peaked in 2022...",
+  "metric": "flat - weighted average rate",
+  "areas": ["Wakad", "Baner"],
+  "comparison": {
+    "Wakad": [...],
+    "Baner": [...]
+  },
+  "table": [...]
+}
+
+🧠 Core Logic (Backend)
+✔ Automatic Area Detection
+
+Matches query to area column values using regex.
+
+✔ N-Years Filter
+
+Handles:
+
+"last 3 years"
+
+"2019–2023"
+
+"2018-20"
+
+"first 2 years"
+
+✔ Column Detection
+
+Understands:
+
+weighted rate
+
+prevailing range
+
+sold units
+…and more.
+
+✔ AI Summary Generation
+
+Uses Gemini 2.5 Flash to convert raw numbers into bullet insights.
+
+🔮 Future Improvements
+
+Chat history persistence
+
+Geo-visualization
+
+Trend prediction using ML
+
+Excel schema validation
+
+File delete/reset API endpoint
+
+🙌 Author
+
+Annsh Kumar Singh
+Full-stack developer • AI enthusiast
+
+GitHub: https://github.com/annshkumarsingh
+
+Project Repo: https://github.com/annshkumarsingh/RealtyIQ
